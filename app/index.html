@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Project Pulse</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="page-header">
+    <div class="page-header__content">
+      <p class="eyebrow">Team workspace</p>
+      <h1>Project Pulse</h1>
+      <p class="intro">A quick view of the projects, people, and priorities moving the team forward.</p>
+    </div>
+  </header>
+
+  <main class="page-content">
+    <section class="projects-section" aria-labelledby="projects-heading">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Current work</p>
+          <h2 id="projects-heading">Project overview</h2>
+        </div>
+        <p id="project-count" class="project-count" aria-live="polite"></p>
+      </div>
+
+      <div id="loading-state" class="state-message" role="status" aria-live="polite">
+        Loading projects…
+      </div>
+
+      <div id="error-state" class="state-message state-message--error" role="alert" hidden>
+        We couldn’t load the project data. Please try again later.
+      </div>
+
+      <div id="empty-state" class="state-message" role="status" hidden>
+        No projects are available right now.
+      </div>
+
+      <div id="project-list" class="dashboard" aria-live="polite" aria-busy="true"></div>
+    </section>
+  </main>
+
+  <script>
+    const projectList = document.querySelector("#project-list");
+    const loadingState = document.querySelector("#loading-state");
+    const errorState = document.querySelector("#error-state");
+    const emptyState = document.querySelector("#empty-state");
+    const projectCount = document.querySelector("#project-count");
+
+    function valueOrFallback(value) {
+      return value === null || value === undefined || value === ""
+        ? "Not provided"
+        : String(value);
+    }
+
+    function createDetail(label, value, className, badgeClass, dataAttribute) {
+      const detail = document.createElement("div");
+      detail.className = className;
+
+      const labelElement = document.createElement("dt");
+      labelElement.textContent = label;
+
+      const valueElement = document.createElement("dd");
+      const displayValue = valueOrFallback(value);
+      valueElement.textContent = displayValue;
+      if (badgeClass) {
+        valueElement.className = badgeClass;
+      }
+      if (dataAttribute) {
+        valueElement.setAttribute(dataAttribute, displayValue);
+      }
+
+      detail.append(labelElement, valueElement);
+      return detail;
+    }
+
+    function createProjectCard(project) {
+      const card = document.createElement("article");
+      card.className = "project-card";
+
+      const heading = document.createElement("h3");
+      heading.textContent = valueOrFallback(project.name);
+      card.append(heading);
+
+      if (project.summary !== null && project.summary !== undefined && project.summary !== "") {
+        const summary = document.createElement("p");
+        summary.className = "project-card__summary";
+        summary.textContent = String(project.summary);
+        card.append(summary);
+      }
+
+      const details = document.createElement("dl");
+      details.className = "project-card__details";
+      details.append(
+        createDetail("Owner", project.owner, "project-card__detail"),
+        createDetail("Status", project.status, "project-card__detail status", "status-badge", "data-status"),
+        createDetail("Recent activity", project.recentActivity, "project-card__detail"),
+        createDetail("Priority", project.priority, "project-card__detail priority", "priority-badge", "data-priority")
+      );
+      card.append(details);
+
+      return card;
+    }
+
+    function showState(state) {
+      loadingState.hidden = state !== "loading";
+      errorState.hidden = state !== "error";
+      emptyState.hidden = state !== "empty";
+    }
+
+    async function loadProjects() {
+      showState("loading");
+      projectList.replaceChildren();
+      projectList.setAttribute("aria-busy", "true");
+      projectCount.textContent = "";
+
+      try {
+        const response = await fetch("project-data.json");
+        if (!response.ok) {
+          throw new Error(`Project data request failed with status ${response.status}`);
+        }
+
+        const data = await response.json();
+        if (!data || !Array.isArray(data.projects)) {
+          throw new Error("Project data does not contain a projects array");
+        }
+
+        if (data.projects.length === 0) {
+          showState("empty");
+          return;
+        }
+
+        const fragment = document.createDocumentFragment();
+        data.projects.forEach((project) => {
+          if (project && typeof project === "object") {
+            fragment.append(createProjectCard(project));
+          }
+        });
+
+        if (fragment.childElementCount === 0) {
+          showState("empty");
+          return;
+        }
+
+        projectList.append(fragment);
+        projectCount.textContent = `${projectList.children.length} project${projectList.children.length === 1 ? "" : "s"}`;
+        showState("ready");
+      } catch (error) {
+        console.error("Unable to load project data.", error);
+        showState("error");
+      } finally {
+        projectList.setAttribute("aria-busy", "false");
+      }
+    }
+
+    loadProjects();
+  </script>
+</body>
+</html>

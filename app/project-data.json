@@ -1,0 +1,36 @@
+{
+  "projects": [
+    {
+      "name": "Contributor Hub",
+      "owner": "Mona Patel",
+      "status": "Active",
+      "recentActivity": "Published the new onboarding checklist and invited the first contributor cohort.",
+      "priority": "High",
+      "summary": "Making it easier for new contributors to find context, tasks, and support."
+    },
+    {
+      "name": "Design System Refresh",
+      "owner": "Jordan Lee",
+      "status": "At risk",
+      "recentActivity": "The accessibility review found two contrast issues in the navigation components.",
+      "priority": "High",
+      "summary": "Aligning shared interface patterns so product teams can ship consistent experiences."
+    },
+    {
+      "name": "Metrics Explorer",
+      "owner": "Casey Morgan",
+      "status": "Planning",
+      "recentActivity": "Interview notes are complete and the first dashboard prototype is ready for review.",
+      "priority": "Medium",
+      "summary": "Giving teams a clearer way to explore project health and delivery trends."
+    },
+    {
+      "name": "Release Notes Toolkit",
+      "owner": "Riley Chen",
+      "status": "Complete",
+      "recentActivity": "Template v2 shipped with examples for product, engineering, and community updates.",
+      "priority": "Low",
+      "summary": "Helping teams turn shipping details into useful updates for the wider community."
+    }
+  ]
+}
